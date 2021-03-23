@@ -1,0 +1,24 @@
+[package]
+name = "dart-sdk-sys"
+version = "2.12.1"
+authors = ["Douman <douman@gmx.se>"]
+edition = "2018"
+keywords = ["dart", "bindings"]
+description = "Rust bindings to Dart SDK"
+categories = ["no-std", "development-tools::ffi", "external-ffi-bindings"]
+repository = "https://github.com/DoumanAsh/dart-sys"
+license = "BSL-1.0"
+
+[dependencies.libc]
+version = "0.2"
+default-features = false
+
+[build-dependencies.bindgen]
+version = "0.57"
+optional = true
+
+[features]
+# Used internally to generate lib.rs
+build-bindings = ["bindgen"]
+# Downloads sources accordingly to crate version
+download-sources = []
