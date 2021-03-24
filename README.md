@@ -8,3 +8,9 @@ Bindings to dart FFI.
 
 Crate version corresponds to Dart SDK [release](https://github.com/dart-lang/sdk/releases)
 
+## How-to update to new SDK version
+
+1. Update `version` in `Cargo.toml` to be equal to desired version of SDK
+2. Run `cargo build --features download-sources,build-bindings`
+3. Optionally run `rustfmt src/lib.rs` to make it pretty
+4. Commit and publish
