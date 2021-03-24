@@ -1446,3 +1446,192 @@ extern "C" {
         arg: *mut libc::c_void,
     ) -> *mut libc::c_void;
 }
+pub type Dart_ServiceRequestCallback = ::core::option::Option<
+    unsafe extern "C" fn(
+        method: *const libc::c_char,
+        param_keys: *mut *const libc::c_char,
+        param_values: *mut *const libc::c_char,
+        num_params: isize,
+        user_data: *mut libc::c_void,
+        json_object: *mut *const libc::c_char,
+    ) -> bool,
+>;
+extern "C" {
+    pub fn Dart_RegisterIsolateServiceRequestCallback(
+        method: *const libc::c_char,
+        callback: Dart_ServiceRequestCallback,
+        user_data: *mut libc::c_void,
+    );
+}
+extern "C" {
+    pub fn Dart_RegisterRootServiceRequestCallback(
+        method: *const libc::c_char,
+        callback: Dart_ServiceRequestCallback,
+        user_data: *mut libc::c_void,
+    );
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Dart_EmbedderInformation {
+    pub version: i32,
+    pub name: *const libc::c_char,
+    pub current_rss: i64,
+    pub max_rss: i64,
+}
+pub type Dart_EmbedderInformationCallback =
+    ::core::option::Option<unsafe extern "C" fn(info: *mut Dart_EmbedderInformation)>;
+extern "C" {
+    pub fn Dart_SetEmbedderInformationCallback(callback: Dart_EmbedderInformationCallback);
+}
+extern "C" {
+    pub fn Dart_InvokeVMServiceMethod(
+        request_json: *mut u8,
+        request_json_length: isize,
+        response_json: *mut *mut u8,
+        response_json_length: *mut isize,
+        error: *mut *mut libc::c_char,
+    ) -> bool;
+}
+pub type Dart_ServiceStreamListenCallback =
+    ::core::option::Option<unsafe extern "C" fn(stream_id: *const libc::c_char) -> bool>;
+pub type Dart_ServiceStreamCancelCallback =
+    ::core::option::Option<unsafe extern "C" fn(stream_id: *const libc::c_char)>;
+extern "C" {
+    pub fn Dart_SetServiceStreamCallbacks(
+        listen_callback: Dart_ServiceStreamListenCallback,
+        cancel_callback: Dart_ServiceStreamCancelCallback,
+    ) -> *mut libc::c_char;
+}
+pub type Dart_NativeStreamConsumer =
+    ::core::option::Option<unsafe extern "C" fn(event_json: *const u8, event_json_length: isize)>;
+extern "C" {
+    pub fn Dart_SetNativeServiceStreamCallback(
+        consumer: Dart_NativeStreamConsumer,
+        stream_id: *const libc::c_char,
+    );
+}
+extern "C" {
+    pub fn Dart_ServiceSendDataEvent(
+        stream_id: *const libc::c_char,
+        event_kind: *const libc::c_char,
+        bytes: *const u8,
+        bytes_length: isize,
+    ) -> Dart_Handle;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Dart_GCStats {
+    pub used: isize,
+    pub capacity: isize,
+    pub external: isize,
+    pub collections: isize,
+    pub time: f64,
+    pub avg_collection_period: f64,
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct Dart_GCEvent {
+    pub type_: *const libc::c_char,
+    pub reason: *const libc::c_char,
+    pub isolate_id: *const libc::c_char,
+    pub new_space: Dart_GCStats,
+    pub old_space: Dart_GCStats,
+}
+pub type Dart_GCEventCallback =
+    ::core::option::Option<unsafe extern "C" fn(event: *mut Dart_GCEvent)>;
+extern "C" {
+    pub fn Dart_SetGCEventCallback(callback: Dart_GCEventCallback);
+}
+pub type Dart_FileModifiedCallback =
+    ::core::option::Option<unsafe extern "C" fn(url: *const libc::c_char, since: i64) -> bool>;
+extern "C" {
+    pub fn Dart_SetFileModifiedCallback(
+        file_modified_callback: Dart_FileModifiedCallback,
+    ) -> *mut libc::c_char;
+}
+extern "C" {
+    pub fn Dart_IsReloading() -> bool;
+}
+extern "C" {
+    pub fn Dart_TimelineGetMicros() -> i64;
+}
+extern "C" {
+    pub fn Dart_GlobalTimelineSetRecordedStreams(stream_mask: i64);
+}
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Begin: Dart_Timeline_Event_Type = 0;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_End: Dart_Timeline_Event_Type = 1;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Instant: Dart_Timeline_Event_Type = 2;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Duration: Dart_Timeline_Event_Type = 3;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Async_Begin: Dart_Timeline_Event_Type = 4;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Async_End: Dart_Timeline_Event_Type = 5;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Async_Instant: Dart_Timeline_Event_Type = 6;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Counter: Dart_Timeline_Event_Type = 7;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Flow_Begin: Dart_Timeline_Event_Type = 8;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Flow_Step: Dart_Timeline_Event_Type = 9;
+pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Flow_End: Dart_Timeline_Event_Type = 10;
+pub type Dart_Timeline_Event_Type = libc::c_int;
+extern "C" {
+    pub fn Dart_TimelineEvent(
+        label: *const libc::c_char,
+        timestamp0: i64,
+        timestamp1_or_async_id: i64,
+        type_: Dart_Timeline_Event_Type,
+        argument_count: isize,
+        argument_names: *mut *const libc::c_char,
+        argument_values: *mut *const libc::c_char,
+    );
+}
+extern "C" {
+    pub fn Dart_SetThreadName(name: *const libc::c_char);
+}
+extern "C" {
+    pub fn Dart_VMIsolateCountMetric() -> i64;
+}
+extern "C" {
+    pub fn Dart_VMCurrentRSSMetric() -> i64;
+}
+extern "C" {
+    pub fn Dart_VMPeakRSSMetric() -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapOldUsedMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapOldUsedMaxMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapOldCapacityMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapOldCapacityMaxMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapOldExternalMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapNewUsedMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapNewUsedMaxMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapNewCapacityMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapNewCapacityMaxMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapNewExternalMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapGlobalUsedMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateHeapGlobalUsedMaxMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateRunnableLatencyMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_IsolateRunnableHeapSizeMetric(isolate: Dart_Isolate) -> i64;
+}

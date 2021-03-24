@@ -88,6 +88,7 @@ fn generate_lib() {
         let out = PathBuf::new().join("src").join("lib.rs");
 
         let bindings = bindgen::Builder::default().header("dart/dart_native_api.h")
+                                                  .header("dart/dart_tools_api.h")
                                                   .raw_line(PREPEND_LIB)
                                                   .parse_callbacks(Box::new(bindgen::CargoCallbacks))
                                                   .generate_comments(false)
