@@ -1,6 +1,6 @@
 [package]
 name = "dart-sdk-sys"
-version = "2.13.4"
+version = "2.14.0"
 authors = ["Douman <douman@gmx.se>"]
 edition = "2018"
 keywords = ["dart", "bindings"]

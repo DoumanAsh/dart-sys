@@ -1013,6 +1013,8 @@ pub type Dart_NativeEntryResolver = ::core::option::Option<
 >;
 pub type Dart_NativeEntrySymbol =
     ::core::option::Option<unsafe extern "C" fn(nf: Dart_NativeFunction) -> *const u8>;
+pub type Dart_FfiNativeResolver =
+    ::core::option::Option<unsafe extern "C" fn(name: *const libc::c_char) -> *mut libc::c_void>;
 pub type Dart_EnvironmentCallback =
     ::core::option::Option<unsafe extern "C" fn(name: Dart_Handle) -> Dart_Handle>;
 extern "C" {
@@ -1035,6 +1037,12 @@ extern "C" {
     pub fn Dart_GetNativeSymbol(
         library: Dart_Handle,
         resolver: *mut Dart_NativeEntrySymbol,
+    ) -> Dart_Handle;
+}
+extern "C" {
+    pub fn Dart_SetFfiNativeResolver(
+        library: Dart_Handle,
+        resolver: Dart_FfiNativeResolver,
     ) -> Dart_Handle;
 }
 pub const Dart_LibraryTag_Dart_kCanonicalizeUrl: Dart_LibraryTag = 0;
@@ -1237,21 +1245,6 @@ extern "C" {
 extern "C" {
     pub fn Dart_WriteProfileToTimeline(main_port: Dart_Port, error: *mut *mut libc::c_char)
         -> bool;
-}
-extern "C" {
-    pub fn Dart_SaveCompilationTrace(
-        buffer: *mut *mut u8,
-        buffer_length: *mut isize,
-    ) -> Dart_Handle;
-}
-extern "C" {
-    pub fn Dart_LoadCompilationTrace(buffer: *mut u8, buffer_length: isize) -> Dart_Handle;
-}
-extern "C" {
-    pub fn Dart_SaveTypeFeedback(buffer: *mut *mut u8, buffer_length: *mut isize) -> Dart_Handle;
-}
-extern "C" {
-    pub fn Dart_LoadTypeFeedback(buffer: *mut u8, buffer_length: isize) -> Dart_Handle;
 }
 extern "C" {
     pub fn Dart_Precompile() -> Dart_Handle;
@@ -1556,6 +1549,12 @@ extern "C" {
     pub fn Dart_TimelineGetMicros() -> i64;
 }
 extern "C" {
+    pub fn Dart_TimelineGetTicks() -> i64;
+}
+extern "C" {
+    pub fn Dart_TimelineGetTicksFrequency() -> i64;
+}
+extern "C" {
     pub fn Dart_GlobalTimelineSetRecordedStreams(stream_mask: i64);
 }
 pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Begin: Dart_Timeline_Event_Type = 0;
@@ -1634,4 +1633,19 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_IsolateRunnableHeapSizeMetric(isolate: Dart_Isolate) -> i64;
+}
+extern "C" {
+    pub fn Dart_GetCurrentUserTag() -> Dart_Handle;
+}
+extern "C" {
+    pub fn Dart_GetDefaultUserTag() -> Dart_Handle;
+}
+extern "C" {
+    pub fn Dart_NewUserTag(label: *const libc::c_char) -> Dart_Handle;
+}
+extern "C" {
+    pub fn Dart_SetCurrentUserTag(user_tag: Dart_Handle) -> Dart_Handle;
+}
+extern "C" {
+    pub fn Dart_GetUserTagLabel(user_tag: Dart_Handle) -> *mut libc::c_char;
 }
