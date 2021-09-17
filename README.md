@@ -54,7 +54,7 @@ final d = ffi.DynamicLibrary.open("my_shared_lib_name.so");
 final DartFunctionT sendDataToRust = d.lookupFunction<RustRxNativeFunc, RustRxDartFunc>("rx_handler");
 
 /// Use function to send string data which internally converts it to C compatible char buffer.
-void sendNative(DartFunctionT ptr, String d) {
+void sendNative(DartFunctionT sendDataToRust, String d) {
     final data = d.toNativeUtf8();
     sendDataToRust(data);
     ffiUtils.calloc.free(data);
