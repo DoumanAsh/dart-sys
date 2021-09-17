@@ -22,7 +22,7 @@ Crate version corresponds to Dart SDK [release](https://github.com/dart-lang/sdk
 
 - Build flutter application;
 
-- Refer to `Dart application` for next steps.
+- Refer to `Dart application` for next steps. Flutter embeds your library inside APK so you can refer to it by just library full name.
 
 ### Dart application
 
