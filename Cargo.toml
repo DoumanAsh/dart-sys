@@ -8,6 +8,13 @@ description = "Rust bindings to Dart SDK"
 categories = ["no-std", "development-tools::ffi", "external-ffi-bindings"]
 repository = "https://github.com/DoumanAsh/dart-sys"
 license = "BSL-1.0"
+include = [
+    "src/",
+    "dart/",
+    "Cargo.tom",
+    "LICENSE",
+    "README.md"
+]
 
 [dependencies.libc]
 version = "0.2"
