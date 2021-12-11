@@ -154,6 +154,7 @@ pub struct Dart_IsolateFlags {
     pub copy_parent_code: bool,
     pub null_safety: bool,
     pub is_system_isolate: bool,
+    pub snapshot_is_dontneed_safe: bool,
 }
 extern "C" {
     pub fn Dart_IsolateFlagsInitialize(flags: *mut Dart_IsolateFlags);
@@ -1013,8 +1014,9 @@ pub type Dart_NativeEntryResolver = ::core::option::Option<
 >;
 pub type Dart_NativeEntrySymbol =
     ::core::option::Option<unsafe extern "C" fn(nf: Dart_NativeFunction) -> *const u8>;
-pub type Dart_FfiNativeResolver =
-    ::core::option::Option<unsafe extern "C" fn(name: *const libc::c_char) -> *mut libc::c_void>;
+pub type Dart_FfiNativeResolver = ::core::option::Option<
+    unsafe extern "C" fn(name: *const libc::c_char, args_n: usize) -> *mut libc::c_void,
+>;
 pub type Dart_EnvironmentCallback =
     ::core::option::Option<unsafe extern "C" fn(name: Dart_Handle) -> Dart_Handle>;
 extern "C" {
@@ -1048,7 +1050,6 @@ extern "C" {
 pub const Dart_LibraryTag_Dart_kCanonicalizeUrl: Dart_LibraryTag = 0;
 pub const Dart_LibraryTag_Dart_kImportTag: Dart_LibraryTag = 1;
 pub const Dart_LibraryTag_Dart_kKernelTag: Dart_LibraryTag = 2;
-pub const Dart_LibraryTag_Dart_kImportExtensionTag: Dart_LibraryTag = 3;
 pub type Dart_LibraryTag = libc::c_int;
 pub type Dart_LibraryTagHandler = ::core::option::Option<
     unsafe extern "C" fn(
@@ -1155,9 +1156,6 @@ extern "C" {
     ) -> Dart_Handle;
 }
 extern "C" {
-    pub fn Dart_GetImportsOfScheme(scheme: Dart_Handle) -> Dart_Handle;
-}
-extern "C" {
     pub fn Dart_FinalizeLoading(complete_futures: bool) -> Dart_Handle;
 }
 extern "C" {
@@ -1174,6 +1172,8 @@ pub const Dart_KernelCompilationStatus_Dart_KernelCompilationStatus_Error:
     Dart_KernelCompilationStatus = 1;
 pub const Dart_KernelCompilationStatus_Dart_KernelCompilationStatus_Crash:
     Dart_KernelCompilationStatus = 2;
+pub const Dart_KernelCompilationStatus_Dart_KernelCompilationStatus_MsgFailed:
+    Dart_KernelCompilationStatus = 3;
 pub type Dart_KernelCompilationStatus = libc::c_int;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1351,8 +1351,9 @@ pub const Dart_CObject_Type_Dart_CObject_kTypedData: Dart_CObject_Type = 7;
 pub const Dart_CObject_Type_Dart_CObject_kExternalTypedData: Dart_CObject_Type = 8;
 pub const Dart_CObject_Type_Dart_CObject_kSendPort: Dart_CObject_Type = 9;
 pub const Dart_CObject_Type_Dart_CObject_kCapability: Dart_CObject_Type = 10;
-pub const Dart_CObject_Type_Dart_CObject_kUnsupported: Dart_CObject_Type = 11;
-pub const Dart_CObject_Type_Dart_CObject_kNumberOfTypes: Dart_CObject_Type = 12;
+pub const Dart_CObject_Type_Dart_CObject_kNativePointer: Dart_CObject_Type = 11;
+pub const Dart_CObject_Type_Dart_CObject_kUnsupported: Dart_CObject_Type = 12;
+pub const Dart_CObject_Type_Dart_CObject_kNumberOfTypes: Dart_CObject_Type = 13;
 pub type Dart_CObject_Type = libc::c_int;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -1373,6 +1374,7 @@ pub union _Dart_CObject__bindgen_ty_1 {
     pub as_array: _Dart_CObject__bindgen_ty_1__bindgen_ty_3,
     pub as_typed_data: _Dart_CObject__bindgen_ty_1__bindgen_ty_4,
     pub as_external_typed_data: _Dart_CObject__bindgen_ty_1__bindgen_ty_5,
+    pub as_native_pointer: _Dart_CObject__bindgen_ty_1__bindgen_ty_6,
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1405,6 +1407,13 @@ pub struct _Dart_CObject__bindgen_ty_1__bindgen_ty_5 {
     pub length: isize,
     pub data: *mut u8,
     pub peer: *mut libc::c_void,
+    pub callback: Dart_HandleFinalizer,
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _Dart_CObject__bindgen_ty_1__bindgen_ty_6 {
+    pub ptr: isize,
+    pub size: isize,
     pub callback: Dart_HandleFinalizer,
 }
 pub type Dart_CObject = _Dart_CObject;
@@ -1553,9 +1562,6 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_TimelineGetTicksFrequency() -> i64;
-}
-extern "C" {
-    pub fn Dart_GlobalTimelineSetRecordedStreams(stream_mask: i64);
 }
 pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Begin: Dart_Timeline_Event_Type = 0;
 pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_End: Dart_Timeline_Event_Type = 1;
