@@ -49,7 +49,11 @@ fn download_sources() {
             Ok(())
         }
 
-        let _ = fs::remove_dir_all("sdk");
+        match fs::remove_dir_all("sdk") {
+            Ok(()) => (),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => (),
+            Err(err) => panic!("cannot remove old sdk/ repo: {}", err),
+        }
 
         let download = std::process::Command::new("git").arg("clone")
                                                         .arg("--depth")
@@ -97,11 +101,24 @@ fn generate_lib() {
                                                   .allowlist_function("_*Dart.+")
                                                   .allowlist_var("_*Dart.+")
                                                   .ctypes_prefix("libc")
+                                                  //do not use bindgen rustfmt as it produces bad
+                                                  //line endings on windows when you force unix
+                                                  //files
+                                                  .rustfmt_bindings(false)
                                                   .use_core()
                                                   .generate()
                                                   .expect("Unable to generate bindings");
 
         bindings.write_to_file(out).expect("Couldn't write bindings!");
+
+        let fmt = std::process::Command::new("rustfmt").arg("src/lib.rs")
+                                                       .status()
+                                                       .map(|status| status.success())
+                                                       .unwrap_or(false);
+
+        if !fmt {
+            println!("cargo:warning=cannot format bindings");
+        }
     }
 
 }
