@@ -175,8 +175,6 @@ pub type Dart_InitializeIsolateCallback = ::core::option::Option<
         error: *mut *mut libc::c_char,
     ) -> bool,
 >;
-pub type Dart_IsolateUnhandledExceptionCallback =
-    ::core::option::Option<unsafe extern "C" fn(error: Dart_Handle)>;
 pub type Dart_IsolateShutdownCallback = ::core::option::Option<
     unsafe extern "C" fn(isolate_group_data: *mut libc::c_void, isolate_data: *mut libc::c_void),
 >;
@@ -185,6 +183,7 @@ pub type Dart_IsolateCleanupCallback = ::core::option::Option<
 >;
 pub type Dart_IsolateGroupCleanupCallback =
     ::core::option::Option<unsafe extern "C" fn(isolate_group_data: *mut libc::c_void)>;
+pub type Dart_ThreadStartCallback = ::core::option::Option<unsafe extern "C" fn()>;
 pub type Dart_ThreadExitCallback = ::core::option::Option<unsafe extern "C" fn()>;
 pub type Dart_FileOpenCallback = ::core::option::Option<
     unsafe extern "C" fn(name: *const libc::c_char, write: bool) -> *mut libc::c_void,
@@ -239,6 +238,14 @@ pub type Dart_PostTaskCallback = ::core::option::Option<
 extern "C" {
     pub fn Dart_RunTask(task: Dart_Task);
 }
+pub type Dart_RegisterKernelBlobCallback = ::core::option::Option<
+    unsafe extern "C" fn(
+        kernel_buffer: *const u8,
+        kernel_buffer_size: isize,
+    ) -> *const libc::c_char,
+>;
+pub type Dart_UnregisterKernelBlobCallback =
+    ::core::option::Option<unsafe extern "C" fn(kernel_blob_uri: *const libc::c_char)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Dart_InitializeParams {
@@ -250,6 +257,7 @@ pub struct Dart_InitializeParams {
     pub shutdown_isolate: Dart_IsolateShutdownCallback,
     pub cleanup_isolate: Dart_IsolateCleanupCallback,
     pub cleanup_group: Dart_IsolateGroupCleanupCallback,
+    pub thread_start: Dart_ThreadStartCallback,
     pub thread_exit: Dart_ThreadExitCallback,
     pub file_open: Dart_FileOpenCallback,
     pub file_read: Dart_FileReadCallback,
@@ -261,6 +269,8 @@ pub struct Dart_InitializeParams {
     pub code_observer: *mut Dart_CodeObserver,
     pub post_task: Dart_PostTaskCallback,
     pub post_task_data: *mut libc::c_void,
+    pub register_kernel_blob: Dart_RegisterKernelBlobCallback,
+    pub unregister_kernel_blob: Dart_UnregisterKernelBlobCallback,
 }
 extern "C" {
     pub fn Dart_Initialize(params: *mut Dart_InitializeParams) -> *mut libc::c_char;
@@ -340,9 +350,6 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_KillIsolate(isolate: Dart_Isolate);
-}
-extern "C" {
-    pub fn Dart_HintFreed(size: isize);
 }
 extern "C" {
     pub fn Dart_NotifyIdle(deadline: i64);
@@ -1235,6 +1242,17 @@ extern "C" {
         incremental_compile: bool,
         snapshot_compile: bool,
         package_config: *const libc::c_char,
+        verbosity: Dart_KernelCompilationVerbosityLevel,
+    ) -> Dart_KernelCompilationResult;
+}
+extern "C" {
+    pub fn Dart_CompileToKernelWithGivenNullsafety(
+        script_uri: *const libc::c_char,
+        platform_kernel: *const u8,
+        platform_kernel_size: isize,
+        snapshot_compile: bool,
+        package_config: *const libc::c_char,
+        null_safety: bool,
         verbosity: Dart_KernelCompilationVerbosityLevel,
     ) -> Dart_KernelCompilationResult;
 }
