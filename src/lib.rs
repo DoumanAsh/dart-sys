@@ -214,30 +214,6 @@ pub struct Dart_CodeObserver {
     pub data: *mut libc::c_void,
     pub on_new_code: Dart_OnNewCodeCallback,
 }
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _Dart_Task {
-    _unused: [u8; 0],
-}
-pub type Dart_Task = *mut _Dart_Task;
-pub const Dart_TaskPriority_Dart_TaskPriority_Default: Dart_TaskPriority = 0;
-pub type Dart_TaskPriority = libc::c_int;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Dart_TaskData {
-    pub priority: Dart_TaskPriority,
-    pub time_point: i64,
-}
-pub type Dart_PostTaskCallback = ::core::option::Option<
-    unsafe extern "C" fn(
-        post_task_data: *mut libc::c_void,
-        task: Dart_Task,
-        task_data: Dart_TaskData,
-    ),
->;
-extern "C" {
-    pub fn Dart_RunTask(task: Dart_Task);
-}
 pub type Dart_RegisterKernelBlobCallback = ::core::option::Option<
     unsafe extern "C" fn(
         kernel_buffer: *const u8,
@@ -267,8 +243,6 @@ pub struct Dart_InitializeParams {
     pub get_service_assets: Dart_GetVMServiceAssetsArchive,
     pub start_kernel_isolate: bool,
     pub code_observer: *mut Dart_CodeObserver,
-    pub post_task: Dart_PostTaskCallback,
-    pub post_task_data: *mut libc::c_void,
     pub register_kernel_blob: Dart_RegisterKernelBlobCallback,
     pub unregister_kernel_blob: Dart_UnregisterKernelBlobCallback,
 }
@@ -335,6 +309,10 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_CurrentIsolateGroupData() -> *mut libc::c_void;
+}
+pub type Dart_IsolateGroupId = i64;
+extern "C" {
+    pub fn Dart_CurrentIsolateGroupId() -> Dart_IsolateGroupId;
 }
 extern "C" {
     pub fn Dart_IsolateGroupData(isolate: Dart_Isolate) -> *mut libc::c_void;
@@ -1570,7 +1548,7 @@ pub struct Dart_GCStats {
 pub struct Dart_GCEvent {
     pub type_: *const libc::c_char,
     pub reason: *const libc::c_char,
-    pub isolate_id: *const libc::c_char,
+    pub isolate_group_id: Dart_IsolateGroupId,
     pub new_space: Dart_GCStats,
     pub old_space: Dart_GCStats,
 }
@@ -1637,40 +1615,40 @@ extern "C" {
     pub fn Dart_VMPeakRSSMetric() -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapOldUsedMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapOldUsedMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapOldUsedMaxMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapOldUsedMaxMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapOldCapacityMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapOldCapacityMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapOldCapacityMaxMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapOldCapacityMaxMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapOldExternalMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapOldExternalMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapNewUsedMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapNewUsedMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapNewUsedMaxMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapNewUsedMaxMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapNewCapacityMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapNewCapacityMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapNewCapacityMaxMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapNewCapacityMaxMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapNewExternalMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapNewExternalMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapGlobalUsedMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapGlobalUsedMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateHeapGlobalUsedMaxMetric(isolate: Dart_Isolate) -> i64;
+    pub fn Dart_IsolateGroupHeapGlobalUsedMaxMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
     pub fn Dart_IsolateRunnableLatencyMetric(isolate: Dart_Isolate) -> i64;
