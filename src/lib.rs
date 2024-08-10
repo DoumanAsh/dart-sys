@@ -336,17 +336,14 @@ extern "C" {
     pub fn Dart_NotifyIdle(deadline: i64);
 }
 pub type Dart_HeapSamplingReportCallback = ::core::option::Option<
-    unsafe extern "C" fn(
-        context: *mut libc::c_void,
-        heap_size: isize,
-        cls_name: *const libc::c_char,
-        data: *mut libc::c_void,
-    ),
+    unsafe extern "C" fn(context: *mut libc::c_void, data: *mut libc::c_void),
 >;
 pub type Dart_HeapSamplingCreateCallback = ::core::option::Option<
     unsafe extern "C" fn(
         isolate: Dart_Isolate,
         isolate_group: Dart_IsolateGroup,
+        cls_name: *const libc::c_char,
+        allocation_size: isize,
     ) -> *mut libc::c_void,
 >;
 pub type Dart_HeapSamplingDeleteCallback =
@@ -367,6 +364,7 @@ extern "C" {
     pub fn Dart_ReportSurvivingAllocations(
         callback: Dart_HeapSamplingReportCallback,
         context: *mut libc::c_void,
+        force_gc: bool,
     );
 }
 extern "C" {
@@ -1631,7 +1629,20 @@ extern "C" {
     pub fn Dart_TimelineEvent(
         label: *const libc::c_char,
         timestamp0: i64,
-        timestamp1_or_async_id: i64,
+        timestamp1_or_id: i64,
+        type_: Dart_Timeline_Event_Type,
+        argument_count: isize,
+        argument_names: *mut *const libc::c_char,
+        argument_values: *mut *const libc::c_char,
+    );
+}
+extern "C" {
+    pub fn Dart_RecordTimelineEvent(
+        label: *const libc::c_char,
+        timestamp0: i64,
+        timestamp1_or_id: i64,
+        flow_id_count: isize,
+        flow_ids: *const i64,
         type_: Dart_Timeline_Event_Type,
         argument_count: isize,
         argument_names: *mut *const libc::c_char,
@@ -1653,9 +1664,11 @@ pub struct Dart_TimelineRecorderEvent {
     pub version: i32,
     pub type_: Dart_Timeline_Event_Type,
     pub timestamp0: i64,
-    pub timestamp1_or_async_id: i64,
+    pub timestamp1_or_id: i64,
     pub isolate: Dart_Port,
     pub isolate_group: Dart_IsolateGroupId,
+    pub isolate_data: *mut libc::c_void,
+    pub isolate_group_data: *mut libc::c_void,
     pub label: *const libc::c_char,
     pub stream: *const libc::c_char,
     pub argument_count: isize,
