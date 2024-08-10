@@ -321,6 +321,9 @@ extern "C" {
     pub fn Dart_DebugName() -> Dart_Handle;
 }
 extern "C" {
+    pub fn Dart_DebugNameToCString() -> *const libc::c_char;
+}
+extern "C" {
     pub fn Dart_IsolateServiceId(isolate: Dart_Isolate) -> *const libc::c_char;
 }
 extern "C" {
@@ -332,14 +335,22 @@ extern "C" {
 extern "C" {
     pub fn Dart_NotifyIdle(deadline: i64);
 }
-pub type Dart_HeapSamplingCallback = ::core::option::Option<
+pub type Dart_HeapSamplingReportCallback = ::core::option::Option<
     unsafe extern "C" fn(
-        isolate_group_data: *mut libc::c_void,
-        cls_name: Dart_Handle,
-        obj: Dart_WeakPersistentHandle,
-        size: usize,
+        context: *mut libc::c_void,
+        heap_size: isize,
+        cls_name: *const libc::c_char,
+        data: *mut libc::c_void,
     ),
 >;
+pub type Dart_HeapSamplingCreateCallback = ::core::option::Option<
+    unsafe extern "C" fn(
+        isolate: Dart_Isolate,
+        isolate_group: Dart_IsolateGroup,
+    ) -> *mut libc::c_void,
+>;
+pub type Dart_HeapSamplingDeleteCallback =
+    ::core::option::Option<unsafe extern "C" fn(data: *mut libc::c_void)>;
 extern "C" {
     pub fn Dart_EnableHeapSampling();
 }
@@ -347,7 +358,16 @@ extern "C" {
     pub fn Dart_DisableHeapSampling();
 }
 extern "C" {
-    pub fn Dart_RegisterHeapSamplingCallback(callback: Dart_HeapSamplingCallback);
+    pub fn Dart_RegisterHeapSamplingCallback(
+        create_callback: Dart_HeapSamplingCreateCallback,
+        delete_callback: Dart_HeapSamplingDeleteCallback,
+    );
+}
+extern "C" {
+    pub fn Dart_ReportSurvivingAllocations(
+        callback: Dart_HeapSamplingReportCallback,
+        context: *mut libc::c_void,
+    );
 }
 extern "C" {
     pub fn Dart_SetHeapSamplingPeriod(bytes: isize);
@@ -1207,6 +1227,9 @@ extern "C" {
     ) -> Dart_Handle;
 }
 extern "C" {
+    pub fn Dart_LoadLibrary(kernel_buffer: Dart_Handle) -> Dart_Handle;
+}
+extern "C" {
     pub fn Dart_FinalizeLoading(complete_futures: bool) -> Dart_Handle;
 }
 extern "C" {
@@ -1261,17 +1284,6 @@ extern "C" {
         incremental_compile: bool,
         snapshot_compile: bool,
         package_config: *const libc::c_char,
-        verbosity: Dart_KernelCompilationVerbosityLevel,
-    ) -> Dart_KernelCompilationResult;
-}
-extern "C" {
-    pub fn Dart_CompileToKernelWithGivenNullsafety(
-        script_uri: *const libc::c_char,
-        platform_kernel: *const u8,
-        platform_kernel_size: isize,
-        snapshot_compile: bool,
-        package_config: *const libc::c_char,
-        null_safety: bool,
         verbosity: Dart_KernelCompilationVerbosityLevel,
     ) -> Dart_KernelCompilationResult;
 }
@@ -1402,6 +1414,12 @@ extern "C" {
 extern "C" {
     pub fn Dart_PrepareToAbort();
 }
+pub type Dart_DwarfStackTraceFootnoteCallback = ::core::option::Option<
+    unsafe extern "C" fn(addresses: *mut *mut libc::c_void, count: isize) -> *mut libc::c_char,
+>;
+extern "C" {
+    pub fn Dart_SetDwarfStackTraceFootnoteCallback(callback: Dart_DwarfStackTraceFootnoteCallback);
+}
 pub const Dart_CObject_Type_Dart_CObject_kNull: Dart_CObject_Type = 0;
 pub const Dart_CObject_Type_Dart_CObject_kBool: Dart_CObject_Type = 1;
 pub const Dart_CObject_Type_Dart_CObject_kInt32: Dart_CObject_Type = 2;
@@ -1431,7 +1449,7 @@ pub union _Dart_CObject__bindgen_ty_1 {
     pub as_int32: i32,
     pub as_int64: i64,
     pub as_double: f64,
-    pub as_string: *mut libc::c_char,
+    pub as_string: *const libc::c_char,
     pub as_send_port: _Dart_CObject__bindgen_ty_1__bindgen_ty_1,
     pub as_capability: _Dart_CObject__bindgen_ty_1__bindgen_ty_2,
     pub as_array: _Dart_CObject__bindgen_ty_1__bindgen_ty_3,
@@ -1575,30 +1593,6 @@ extern "C" {
         bytes_length: isize,
     ) -> *mut libc::c_char;
 }
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Dart_GCStats {
-    pub used: isize,
-    pub capacity: isize,
-    pub external: isize,
-    pub collections: isize,
-    pub time: f64,
-    pub avg_collection_period: f64,
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct Dart_GCEvent {
-    pub type_: *const libc::c_char,
-    pub reason: *const libc::c_char,
-    pub isolate_group_id: Dart_IsolateGroupId,
-    pub new_space: Dart_GCStats,
-    pub old_space: Dart_GCStats,
-}
-pub type Dart_GCEventCallback =
-    ::core::option::Option<unsafe extern "C" fn(event: *mut Dart_GCEvent)>;
-extern "C" {
-    pub fn Dart_SetGCEventCallback(callback: Dart_GCEventCallback);
-}
 pub type Dart_FileModifiedCallback =
     ::core::option::Option<unsafe extern "C" fn(url: *const libc::c_char, since: i64) -> bool>;
 extern "C" {
@@ -1673,25 +1667,10 @@ extern "C" {
     pub fn Dart_SetTimelineRecorderCallback(callback: Dart_TimelineRecorderCallback);
 }
 extern "C" {
-    pub fn Dart_VMIsolateCountMetric() -> i64;
-}
-extern "C" {
-    pub fn Dart_VMCurrentRSSMetric() -> i64;
-}
-extern "C" {
-    pub fn Dart_VMPeakRSSMetric() -> i64;
-}
-extern "C" {
     pub fn Dart_IsolateGroupHeapOldUsedMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateGroupHeapOldUsedMaxMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
     pub fn Dart_IsolateGroupHeapOldCapacityMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
-    pub fn Dart_IsolateGroupHeapOldCapacityMaxMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
     pub fn Dart_IsolateGroupHeapOldExternalMetric(group: Dart_IsolateGroup) -> i64;
@@ -1700,28 +1679,10 @@ extern "C" {
     pub fn Dart_IsolateGroupHeapNewUsedMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateGroupHeapNewUsedMaxMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
     pub fn Dart_IsolateGroupHeapNewCapacityMetric(group: Dart_IsolateGroup) -> i64;
 }
 extern "C" {
-    pub fn Dart_IsolateGroupHeapNewCapacityMaxMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
     pub fn Dart_IsolateGroupHeapNewExternalMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
-    pub fn Dart_IsolateGroupHeapGlobalUsedMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
-    pub fn Dart_IsolateGroupHeapGlobalUsedMaxMetric(group: Dart_IsolateGroup) -> i64;
-}
-extern "C" {
-    pub fn Dart_IsolateRunnableLatencyMetric(isolate: Dart_Isolate) -> i64;
-}
-extern "C" {
-    pub fn Dart_IsolateRunnableHeapSizeMetric(isolate: Dart_Isolate) -> i64;
 }
 extern "C" {
     pub fn Dart_GetCurrentUserTag() -> Dart_Handle;
@@ -1737,4 +1698,13 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_GetUserTagLabel(user_tag: Dart_Handle) -> *mut libc::c_char;
+}
+pub type Dart_HeapSnapshotWriteChunkCallback = ::core::option::Option<
+    unsafe extern "C" fn(context: *mut libc::c_void, buffer: *mut u8, size: isize, is_last: bool),
+>;
+extern "C" {
+    pub fn Dart_WriteHeapSnapshot(
+        write: Dart_HeapSnapshotWriteChunkCallback,
+        context: *mut libc::c_void,
+    ) -> *mut libc::c_char;
 }
