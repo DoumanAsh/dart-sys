@@ -111,12 +111,6 @@ extern "C" {
     pub fn Dart_DeleteWeakPersistentHandle(object: Dart_WeakPersistentHandle);
 }
 extern "C" {
-    pub fn Dart_UpdateExternalSize(
-        object: Dart_WeakPersistentHandle,
-        external_allocation_size: isize,
-    );
-}
-extern "C" {
     pub fn Dart_NewFinalizableHandle(
         object: Dart_Handle,
         peer: *mut libc::c_void,
@@ -128,13 +122,6 @@ extern "C" {
     pub fn Dart_DeleteFinalizableHandle(
         object: Dart_FinalizableHandle,
         strong_ref_to_object: Dart_Handle,
-    );
-}
-extern "C" {
-    pub fn Dart_UpdateFinalizableExternalSize(
-        object: Dart_FinalizableHandle,
-        strong_ref_to_object: Dart_Handle,
-        external_allocation_size: isize,
     );
 }
 extern "C" {
@@ -1281,6 +1268,7 @@ extern "C" {
         platform_kernel_size: isize,
         incremental_compile: bool,
         snapshot_compile: bool,
+        embed_sources: bool,
         package_config: *const libc::c_char,
         verbosity: Dart_KernelCompilationVerbosityLevel,
     ) -> Dart_KernelCompilationResult;
