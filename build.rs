@@ -94,7 +94,7 @@ fn generate_lib() {
         let bindings = bindgen::Builder::default().header("dart/dart_native_api.h")
                                                   .header("dart/dart_tools_api.h")
                                                   .raw_line(PREPEND_LIB)
-                                                  .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+                                                  .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
                                                   .generate_comments(false)
                                                   .layout_tests(false)
                                                   .allowlist_type("_*Dart.+")
@@ -104,7 +104,7 @@ fn generate_lib() {
                                                   //do not use bindgen rustfmt as it produces bad
                                                   //line endings on windows when you force unix
                                                   //files
-                                                  .rustfmt_bindings(false)
+                                                  .formatter(bindgen::Formatter::None)
                                                   .use_core()
                                                   .generate()
                                                   .expect("Unable to generate bindings");
