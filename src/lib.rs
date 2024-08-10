@@ -663,6 +663,9 @@ extern "C" {
     pub fn Dart_StringLength(str_: Dart_Handle, length: *mut isize) -> Dart_Handle;
 }
 extern "C" {
+    pub fn Dart_StringUTF8Length(str_: Dart_Handle, length: *mut isize) -> Dart_Handle;
+}
+extern "C" {
     pub fn Dart_NewStringFromCString(str_: *const libc::c_char) -> Dart_Handle;
 }
 extern "C" {
@@ -700,6 +703,13 @@ extern "C" {
         str_: Dart_Handle,
         utf8_array: *mut *mut u8,
         length: *mut isize,
+    ) -> Dart_Handle;
+}
+extern "C" {
+    pub fn Dart_CopyUTF8EncodingOfString(
+        str_: Dart_Handle,
+        utf8_array: *mut u8,
+        length: isize,
     ) -> Dart_Handle;
 }
 extern "C" {
@@ -1238,7 +1248,6 @@ pub type Dart_KernelCompilationStatus = libc::c_int;
 #[derive(Debug, Copy, Clone)]
 pub struct Dart_KernelCompilationResult {
     pub status: Dart_KernelCompilationStatus,
-    pub null_safety: bool,
     pub error: *mut libc::c_char,
     pub kernel: *mut u8,
     pub kernel_size: isize,
