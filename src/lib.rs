@@ -136,9 +136,10 @@ pub struct Dart_IsolateFlags {
     pub use_osr: bool,
     pub obfuscate: bool,
     pub load_vmservice_library: bool,
-    pub copy_parent_code: bool,
     pub null_safety: bool,
     pub is_system_isolate: bool,
+    pub is_service_isolate: bool,
+    pub is_kernel_isolate: bool,
     pub snapshot_is_dontneed_safe: bool,
     pub branch_coverage: bool,
 }
@@ -454,9 +455,6 @@ extern "C" {
     pub fn Dart_HandleMessage() -> Dart_Handle;
 }
 extern "C" {
-    pub fn Dart_WaitForEvent(timeout_millis: i64) -> Dart_Handle;
-}
-extern "C" {
     pub fn Dart_HandleServiceMessages() -> bool;
 }
 extern "C" {
@@ -546,9 +544,6 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_IsStringLatin1(object: Dart_Handle) -> bool;
-}
-extern "C" {
-    pub fn Dart_IsExternalString(object: Dart_Handle) -> bool;
 }
 extern "C" {
     pub fn Dart_IsList(object: Dart_Handle) -> bool;
@@ -676,24 +671,6 @@ extern "C" {
 }
 extern "C" {
     pub fn Dart_NewStringFromUTF32(utf32_array: *const i32, length: isize) -> Dart_Handle;
-}
-extern "C" {
-    pub fn Dart_NewExternalLatin1String(
-        latin1_array: *const u8,
-        length: isize,
-        peer: *mut libc::c_void,
-        external_allocation_size: isize,
-        callback: Dart_HandleFinalizer,
-    ) -> Dart_Handle;
-}
-extern "C" {
-    pub fn Dart_NewExternalUTF16String(
-        utf16_array: *const u16,
-        length: isize,
-        peer: *mut libc::c_void,
-        external_allocation_size: isize,
-        callback: Dart_HandleFinalizer,
-    ) -> Dart_Handle;
 }
 extern "C" {
     pub fn Dart_StringToCString(str_: Dart_Handle, cstr: *mut *const libc::c_char) -> Dart_Handle;
@@ -1386,18 +1363,6 @@ extern "C" {
     ) -> Dart_Handle;
 }
 extern "C" {
-    pub fn Dart_CreateCoreJITSnapshotAsBlobs(
-        vm_snapshot_data_buffer: *mut *mut u8,
-        vm_snapshot_data_size: *mut isize,
-        vm_snapshot_instructions_buffer: *mut *mut u8,
-        vm_snapshot_instructions_size: *mut isize,
-        isolate_snapshot_data_buffer: *mut *mut u8,
-        isolate_snapshot_data_size: *mut isize,
-        isolate_snapshot_instructions_buffer: *mut *mut u8,
-        isolate_snapshot_instructions_size: *mut isize,
-    ) -> Dart_Handle;
-}
-extern "C" {
     pub fn Dart_GetObfuscationMap(buffer: *mut *mut u8, buffer_length: *mut isize) -> Dart_Handle;
 }
 extern "C" {
@@ -1622,17 +1587,6 @@ pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Flow_Begin: Dart_Timeline
 pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Flow_Step: Dart_Timeline_Event_Type = 9;
 pub const Dart_Timeline_Event_Type_Dart_Timeline_Event_Flow_End: Dart_Timeline_Event_Type = 10;
 pub type Dart_Timeline_Event_Type = libc::c_int;
-extern "C" {
-    pub fn Dart_TimelineEvent(
-        label: *const libc::c_char,
-        timestamp0: i64,
-        timestamp1_or_id: i64,
-        type_: Dart_Timeline_Event_Type,
-        argument_count: isize,
-        argument_names: *mut *const libc::c_char,
-        argument_values: *mut *const libc::c_char,
-    );
-}
 extern "C" {
     pub fn Dart_RecordTimelineEvent(
         label: *const libc::c_char,
