@@ -1,6 +1,6 @@
 [package]
 name = "dart-sdk-sys"
-version = "3.4.4"
+version = "3.5.4"
 authors = ["Douman <douman@gmx.se>"]
 edition = "2018"
 keywords = ["dart", "bindings"]
@@ -21,7 +21,7 @@ version = "0.2"
 default-features = false
 
 [build-dependencies.bindgen]
-version = "0.69"
+version = "0.71"
 optional = true
 
 [features]
