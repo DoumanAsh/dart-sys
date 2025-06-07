@@ -1105,6 +1105,14 @@ pub type Dart_NativeAssetsDlopenCallback = ::core::option::Option<
 pub type Dart_NativeAssetsDlopenCallbackNoPath = ::core::option::Option<
     unsafe extern "C" fn(error: *mut *mut libc::c_char) -> *mut libc::c_void,
 >;
+pub type Dart_NativeAssetsDlopenAssetId = ::core::option::Option<
+    unsafe extern "C" fn(
+        asset_id: *const libc::c_char,
+        error: *mut *mut libc::c_char,
+    ) -> *mut libc::c_void,
+>;
+pub type Dart_NativeAssetsAvailableAssets =
+    ::core::option::Option<unsafe extern "C" fn() -> *mut libc::c_char>;
 pub type Dart_NativeAssetsDlsymCallback = ::core::option::Option<
     unsafe extern "C" fn(
         handle: *mut libc::c_void,
@@ -1121,6 +1129,8 @@ pub struct NativeAssetsApi {
     pub dlopen_process: Dart_NativeAssetsDlopenCallbackNoPath,
     pub dlopen_executable: Dart_NativeAssetsDlopenCallbackNoPath,
     pub dlsym: Dart_NativeAssetsDlsymCallback,
+    pub dlopen: Dart_NativeAssetsDlopenAssetId,
+    pub available_assets: Dart_NativeAssetsAvailableAssets,
 }
 unsafe extern "C" {
     pub fn Dart_InitializeNativeAssetsResolver(native_assets_api: *mut NativeAssetsApi);
@@ -1501,6 +1511,13 @@ unsafe extern "C" {
         name: *const libc::c_char,
         handler: Dart_NativeMessageHandler,
         handle_concurrently: bool,
+    ) -> Dart_Port;
+}
+unsafe extern "C" {
+    pub fn Dart_NewConcurrentNativePort(
+        name: *const libc::c_char,
+        handler: Dart_NativeMessageHandler,
+        max_concurrency: isize,
     ) -> Dart_Port;
 }
 unsafe extern "C" {
