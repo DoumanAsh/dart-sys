@@ -203,14 +203,6 @@ pub struct Dart_CodeObserver {
     pub data: *mut libc::c_void,
     pub on_new_code: Dart_OnNewCodeCallback,
 }
-pub type Dart_RegisterKernelBlobCallback = ::core::option::Option<
-    unsafe extern "C" fn(
-        kernel_buffer: *const u8,
-        kernel_buffer_size: isize,
-    ) -> *const libc::c_char,
->;
-pub type Dart_UnregisterKernelBlobCallback =
-    ::core::option::Option<unsafe extern "C" fn(kernel_blob_uri: *const libc::c_char)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Dart_InitializeParams {
@@ -232,8 +224,6 @@ pub struct Dart_InitializeParams {
     pub get_service_assets: Dart_GetVMServiceAssetsArchive,
     pub start_kernel_isolate: bool,
     pub code_observer: *mut Dart_CodeObserver,
-    pub register_kernel_blob: Dart_RegisterKernelBlobCallback,
-    pub unregister_kernel_blob: Dart_UnregisterKernelBlobCallback,
 }
 unsafe extern "C" {
     pub fn Dart_Initialize(params: *mut Dart_InitializeParams) -> *mut libc::c_char;
@@ -498,6 +488,12 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn Dart_SendPortGetIdEx(port: Dart_Handle, portex_id: *mut Dart_PortEx) -> Dart_Handle;
+}
+unsafe extern "C" {
+    pub fn Dart_SetCurrentThreadOwnsIsolate();
+}
+unsafe extern "C" {
+    pub fn Dart_GetCurrentThreadOwnsIsolate(port: Dart_Port) -> bool;
 }
 unsafe extern "C" {
     pub fn Dart_EnterScope();
